@@ -77,7 +77,7 @@ mod SubscriptionManager {
         
         // Initialize tier prices
         self.tier_prices.write(FREE_TIER, 0);
-        self.tier_prices.write(PRO_TIER, 1000000000000000000); // 1 ETH equivalent
+        self.tier_prices.write(PRO_TIER, 1000); // value in strk
     }
 
     #[abi(embed_v0)]
