@@ -13,7 +13,7 @@ This research analyzes the feasibility of implementing a subscription-based paym
 #### Subscription Management Contract
 - **Purpose**: Handles subscription payments and maintains subscription status
 - **Key Functions**:
-  - `subscribe(uint256 planId, uint256 duration)`: Process subscription payments
+  - `subscribe(uint256 planId, uint256 duration)`: Process subscription paymentshttps://starknet-by-example.voyager.online/applications/timelock
   - `cancelSubscription(uint256 subscriptionId)`: Handle subscription cancellations
   - `checkSubscriptionStatus(address user)`: Verify active subscriptions
   - `upgradeSubscription(uint256 newPlanId)`: Handle plan upgrades
