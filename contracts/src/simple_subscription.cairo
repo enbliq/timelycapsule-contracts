@@ -9,6 +9,31 @@ struct Subscription {
     active: bool,
 }
 
+@storage_var
+func next_payment_date(subscriber: felt) -> (date: felt) {
+}
+
+@external
+func schedule_recurring_payment{
+    syscall_ptr: felt*,
+    pedersen_ptr: HashBuiltin*,
+    range_check_ptr
+}(subscriber: felt, interval_days: felt, amount: felt) {
+    let current_date = get_block_timestamp();
+    next_payment_date.write(subscriber, current_date + interval_days * 86400);
+    fund_transfer.transfer(subscriber, contract_address, amount);
+    return ();
+}
+
+@view
+func get_next_payment_date{
+    syscall_ptr: felt*,
+    pedersen_ptr: HashBuiltin*,
+    range_check_ptr
+}(subscriber: felt) -> (date: felt) {
+    return next_payment_date.read(subscriber);
+}
+
 #[starknet::interface]
 trait ISubscriptionManager<T> {
     fn get_subscription(self: @T, user: ContractAddress) -> Subscription;
