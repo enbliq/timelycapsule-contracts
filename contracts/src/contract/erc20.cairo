@@ -65,8 +65,8 @@ pub mod TimelyCapsuleToken {
         }
 
         fn allowance(
-            self: @ContractState, 
-            owner: ContractAddress, 
+            self: @ContractState,
+            owner: ContractAddress,
             spender: ContractAddress,
         ) -> u256 {
             let allowance = self.allowances.entry((owner, spender)).read();
