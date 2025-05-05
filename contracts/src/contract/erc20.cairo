@@ -2,18 +2,16 @@
 pub mod TimelyCapsuleToken {
     use core::num::traits::Zero;
     use core::starknet::storage::{
-        StoragePointerReadAccess, StoragePointerWriteAccess, Map, StoragePathEntry
+        Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
-    use crate::interfaces::IERC20;
     use starknet::event::EventEmitter;
     use starknet::{ContractAddress, get_caller_address};
+    use crate::interfaces::IERC20;
 
     #[storage]
     pub struct Storage {
         balances: Map<ContractAddress, u256>,
-        allowances: Map<
-            (ContractAddress, ContractAddress), u256
-        >, 
+        allowances: Map<(ContractAddress, ContractAddress), u256>,
         token_name: ByteArray,
         symbol: ByteArray,
         decimal: u8,
@@ -43,7 +41,7 @@ pub mod TimelyCapsuleToken {
         owner: ContractAddress,
         #[key]
         spender: ContractAddress,
-        value: u256
+        value: u256,
     }
 
     #[constructor]
@@ -67,7 +65,9 @@ pub mod TimelyCapsuleToken {
         }
 
         fn allowance(
-            self: @ContractState, owner: ContractAddress, spender: ContractAddress
+            self: @ContractState, 
+            owner: ContractAddress, 
+            spender: ContractAddress,
         ) -> u256 {
             let allowance = self.allowances.entry((owner, spender)).read();
 
@@ -86,7 +86,8 @@ pub mod TimelyCapsuleToken {
             self.balances.entry(recipient).write(recipient_prev_balance + amount);
 
             assert(
-                self.balances.entry(recipient).read() > recipient_prev_balance, 'Transaction failed'
+                self.balances.entry(recipient).read() > recipient_prev_balance,
+                'Transaction failed',
             );
 
             self.emit(Transfer { from: sender, to: recipient, amount });
@@ -98,7 +99,7 @@ pub mod TimelyCapsuleToken {
             ref self: ContractState,
             sender: ContractAddress,
             recipient: ContractAddress,
-            amount: u256
+            amount: u256,
         ) -> bool {
             let spender = get_caller_address();
 
