@@ -55,16 +55,15 @@ mod PaymentIntent {
             storage.intents.write(intent_id.into(), payment_intent);
             storage.next_intent_id.write(intent_id + 1);
 
-            self
-                .emit(
-                    IntentCreated {
-                        intent_id: intent_id.into(),
-                        customer,
-                        recipient,
-                        amount,
-                        currency,
-                    },
-                );
+            self.emit(
+                IntentCreated {
+                    intent_id: intent_id.into(),
+                    customer,
+                    recipient,
+                    amount,
+                    currency,
+                },
+            );
 
             intent_id.into()
         }
