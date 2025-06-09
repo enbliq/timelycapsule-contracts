@@ -1,27 +1,26 @@
 #[starknet::contract]
 mod PaymentIntent {
-    use starknet::ContractAddress;
-    use starknet::get_caller_address;
-    
+    use starknet::{ContractAddress, get_caller_address};
+
     #[derive(Drop, starknet::Store, Serde)]
     struct PaymentIntentData {
         amount: u256,
         currency: felt252,
         customer: ContractAddress,
         recipient: ContractAddress,
-        status: felt252
+        status: felt252,
     }
 
     #[storage]
     struct Storage {
         intents: LegacyMap<felt252, PaymentIntentData>,
-        next_intent_id: u128
+        next_intent_id: u128,
     }
 
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
-        IntentCreated: IntentCreated
+        IntentCreated: IntentCreated,
     }
 
     #[derive(Drop, starknet::Event, Serde)]
@@ -30,7 +29,7 @@ mod PaymentIntent {
         customer: ContractAddress,
         recipient: ContractAddress,
         amount: u256,
-        currency: felt252
+        currency: felt252,
     }
 
     #[external(v0)]
@@ -40,7 +39,7 @@ mod PaymentIntent {
             amount: u256,
             currency: felt252,
             customer: ContractAddress,
-            recipient: ContractAddress
+            recipient: ContractAddress,
         ) -> felt252 {
             let mut storage = self.storage();
             let intent_id = storage.next_intent_id.read();
@@ -50,19 +49,22 @@ mod PaymentIntent {
                 currency,
                 customer,
                 recipient,
-                status: 'created'
+                status: 'created',
             };
 
             storage.intents.write(intent_id.into(), payment_intent);
             storage.next_intent_id.write(intent_id + 1);
 
-            self.emit(IntentCreated {
-                intent_id: intent_id.into(),
-                customer,
-                recipient,
-                amount,
-                currency
-            });
+            self
+                .emit(
+                    IntentCreated {
+                        intent_id: intent_id.into(),
+                        customer,
+                        recipient,
+                        amount,
+                        currency,
+                    },
+                );
 
             intent_id.into()
         }
