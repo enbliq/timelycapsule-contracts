@@ -1,5 +1,3 @@
-%lang starknet
-
 use core::array::ArrayTrait;
 use core::integer::u256;
 use core::string::string;
