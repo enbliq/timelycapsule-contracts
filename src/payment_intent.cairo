@@ -1,62 +1,75 @@
-use core::array::ArrayTrait;
-use core::integer::u256;
-use core::string::string;
-use core::{bool, felt252};
-
-use starknet::storage::{Storage, storage_map};
-use starknet::{ContractAddress, contract};
-use starknet::short_string::short_string;
-
-
-#[derive(Copy, Drop, Serde)]
-struct PaymentIntentData {
-    amount: u256,
-    currency: felt252,
-    customer: ContractAddress,
-    recipient: ContractAddress,
-    status: felt252,
-}
-
-
-#[contract]
+#[starknet::contract]
 mod PaymentIntent {
-    use super::*;
-
-    #[storage]
-    struct Storage {
-        intent_counter: felt252,
-        intents: LegacyMap<felt252, PaymentIntentData>,
-    }
-
+    use starknet::ContractAddress;
+    use starknet::get_caller_address;
     
-    #[external]
-    fn create_intent(
-        ref self: ContractState,
+    #[derive(Drop, starknet::Store, Serde)]
+    struct PaymentIntentData {
         amount: u256,
         currency: felt252,
         customer: ContractAddress,
         recipient: ContractAddress,
-    ) {
-        let id = self.intent_counter.read();
-        let new_id = id + 1;
-        self.intent_counter.write(new_id);
-
-        let status = short_string!("created"); // Convert "created" to felt252
-
-        let intent = PaymentIntentData {
-            amount,
-            currency,
-            customer,
-            recipient,
-            status,
-        };
-
-        self.intents.write(new_id, intent);
+        status: felt252
     }
 
-   
-    #[view]
-    fn get_intent(self: @ContractState, intent_id: felt252) -> PaymentIntentData {
-        self.intents.read(intent_id)
+    #[storage]
+    struct Storage {
+        intents: LegacyMap<felt252, PaymentIntentData>,
+        next_intent_id: u128
+    }
+
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    enum Event {
+        IntentCreated: IntentCreated
+    }
+
+    #[derive(Drop, starknet::Event, Serde)]
+    struct IntentCreated {
+        intent_id: felt252,
+        customer: ContractAddress,
+        recipient: ContractAddress,
+        amount: u256,
+        currency: felt252
+    }
+
+    #[external(v0)]
+    impl PaymentIntentImpl of super::PaymentIntentInterface {
+        fn create_intent(
+            ref self: ContractState,
+            amount: u256,
+            currency: felt252,
+            customer: ContractAddress,
+            recipient: ContractAddress
+        ) -> felt252 {
+            let mut storage = self.storage();
+            let intent_id = storage.next_intent_id.read();
+
+            let payment_intent = PaymentIntentData {
+                amount,
+                currency,
+                customer,
+                recipient,
+                status: 'created'
+            };
+
+            storage.intents.write(intent_id.into(), payment_intent);
+            storage.next_intent_id.write(intent_id + 1);
+
+            self.emit(IntentCreated {
+                intent_id: intent_id.into(),
+                customer,
+                recipient,
+                amount,
+                currency
+            });
+
+            intent_id.into()
+        }
+
+        #[view]
+        fn get_intent(self: @ContractState, intent_id: felt252) -> PaymentIntentData {
+            self.storage().intents.read(intent_id)
+        }
     }
 }
